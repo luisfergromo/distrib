@@ -15,7 +15,7 @@
 #include "practica1_methods.h"
 
 #define DIF 16
-#define NHILOS 2
+#define NHILOS 1
 
 struct thread_info {
    int nThread;
