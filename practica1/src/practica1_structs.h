@@ -2,7 +2,7 @@
 
 // NOMBRE DEL ARCHIVO A PROCESAR
 
-char filename[]="C:/Users/IS684310/workspace/distribuidos/practica1/img/rocks.bmp";
+char filename[]="C:/Users/espnosa/iteso/distribuidos/practica1/img/rocks.bmp";
 
 #pragma pack(2) // Empaquetado de 2 bytes
 typedef struct {
