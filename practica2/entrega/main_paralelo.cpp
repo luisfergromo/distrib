@@ -20,7 +20,7 @@
 
 struct	AVION avion[MAX];
 #define MAX_THREADS 3
-HANDLE	semaphore;//sem·foro para autorizar a los threads ejecutar un nuevo ciclo
+HANDLE	semaphore;//sem√°foro para autorizar a los threads ejecutar un nuevo ciclo
 CRITICAL_SECTION cs; //seccion critica para modificar variable global totalWarnings
 int totalWarnings=0;
 
