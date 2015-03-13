@@ -3,10 +3,11 @@
 #include <time.h>
 #include <windows.h>
 #include <omp.h>
+#include "def.h"
 
 // Elementos a ordenar
-#define N 20000000
 int	arr[N];
+struct Stack S;
 
 // Methods
 int	errors(	int	*numbers, int elems);
@@ -23,12 +24,12 @@ int	main()
 	start=clock();
 	SortArr	(arr);
 	stop=clock();
-
-	if((n=errors(arr,N)))
-		printf("Se encontrarin %d errores\n",n);
+	
+	/*if((n=errors(arr,N)))
+		printf("Se encontraron %d errores\n",n);
 	else
-		printf("%d elementos ordenados en %1.2f segundos\n",N,((float)stop-(float)start)/1000.0);
-
+		*/printf("%d elementos ordenados en %1.2f segundos\n",N,((float)stop-(float)start)/1000.0);
+		
 	Sleep(3000);
 }
 
@@ -62,7 +63,7 @@ int quickSortPartition(int *array, int left, int right)
 		int pivote = array[right];
 		int lPointer = left;
 		int rPointer = right - 1;
-		
+
 		while(true) 
 		{
 			//until the left pointer contains something bigger than pivote
@@ -90,7 +91,7 @@ int quickSortPartition(int *array, int left, int right)
 		
 		//in this case lPointer is the right most pointer
 		return lPointer;
-	}
+}
 
 void quickSort(int *array, int left, int right)
 {
@@ -99,16 +100,38 @@ void quickSort(int *array, int left, int right)
 
 	int p = quickSortPartition(array, left, right);
 
-	#pragma omp parallel sections
+	if(right-left <= GRANULARITY )
 	{
-		#pragma omp section
-		quickSort(array, left, p - 1);
-		#pragma omp section
-		quickSort(array, p + 1, right);
+		quickSort( array , left , p - 1);
+		quickSort( array , p+1  , right);
+	}
+	else
+	{
+		Stack_Push( &S , left , p - 1);
+		Stack_Push( &S , p+1  , right);
 	}
 }
 
 void SortArr(int *numbers)
 {
-	quickSort(numbers,0,N);
+	Stack_Init(&S);
+	Stack_Push(&S,0,N);
+	
+	#pragma omp parallel 
+	{
+		#pragma omp single
+		{
+			while(Stack_Size(&S)>0)
+			{
+				struct LR data= Stack_Pop(&S);
+				int l= data.L;
+				int r= data.R;
+
+				#pragma omp taskwait
+				quickSort(numbers,l,r);
+			}
+			
+		}
+	}
+	
 }
