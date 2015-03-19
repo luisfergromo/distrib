@@ -96,6 +96,16 @@ void run()
 
   //printf("\n[%d] is in, starting with %d", world_rank,initValue);
   bool isPair= ((initValue % 2) == 0);
+  int A, sumA, B;
+
+  for(A = initValue; A <= finalValue; A+= world_size)
+  {
+    sumA= sumaDeFactores(A, isPair);
+    B= sumaDeFactores(sumA, isPair);
+    if(A==B)
+      printf("\n[%d] Los numeros: %d  y %d son amigos",world_rank,A,sumA);
+  }
+  /*
   int sum1, sum2;
   int i;
 
@@ -111,6 +121,7 @@ void run()
 
 		isPair = !isPair;
 	}
+  */
 
   printf("\n[%d] finished", world_rank);
 }
@@ -120,7 +131,8 @@ void run()
 * @isPairam num
 * @isPairam isPair
 **/
-int sumaDeFactores(int num, bool isPair){
+int sumaDeFactores(int num, bool isPair)
+{
 	if(num == 2) return 1;
 	if(num == 1) return 0;
 
