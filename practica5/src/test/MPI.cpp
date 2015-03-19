@@ -31,3 +31,10 @@ int main(int argc, char** argv) {
     // Finalize the MPI environment.
     MPI_Finalize();
 }
+
+/**
+Hello world from processor romina-HP-Z210-Workstation, rank 0 out of 4 processors
+Hello world from processor romina-HP-Z210-Workstation, rank 1 out of 4 processors
+Hello world from processor romina-HP-Z210-Workstation, rank 2 out of 4 processors
+Hello world from processor romina-HP-Z210-Workstation, rank 3 out of 4 processors
+**/
