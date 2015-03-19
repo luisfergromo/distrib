@@ -17,33 +17,33 @@ char processor_name[MPI_MAX_PROCESSOR_NAME];
 clock_t t_inicial,t_final;
 int initValue, finalValue;
 
-void init();
+void initValues();
 void run();
-int sumaDeFactores(int num, int isPair);
+int sumaDeFactores(int num, bool isPair);
 
 /**
 * @method main
 **/
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+  bool sync=false;
 
   MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	MPI_Get_processor_name(processor_name, &name_len);
 
-  /*printf("\nRepoting from processor %s, rank %d"
-			" out of %d processors",
-			processor_name, world_rank, world_size);*/
-
-  init();
-
   MPI_Barrier(MPI_COMM_WORLD);
+    initValues();
+
 	if(world_rank == MASTER)
 		t_inicial=clock();
 
   run();
 
   MPI_Barrier(MPI_COMM_WORLD);
+    sync=true;
+
 	if(world_rank == MASTER)
   {
 		t_final=clock();
@@ -55,34 +55,36 @@ int main(int argc, char** argv) {
 }
 
 /**
-* @method init
+* @method initValues
 **/
-void init()
+void initValues()
 {
-  //Master gets initValue and finalValue
-  float buf[2];
-  MPI_Barrier(MPI_COMM_WORLD);
-  if(world_rank == MASTER)
+  int buf[2];
+
+  if (world_rank == MASTER)
   {
-		printf("\nIngresar valor inicial: ");
+    printf("\nIngresar valor inicial: ");
 		scanf("%d",&initValue);
 		printf("\nIngresar valor final: ");
 		scanf("%d",&finalValue);
 		buf[0]= initValue;
 		buf[1]= finalValue;
-	}
 
-  //Master broadcasts
-  MPI_Bcast(buf, world_size, MPI_INT, MASTER, MPI_COMM_WORLD);
-	fflush(stdout);
+    //printf("\n[%d] broadcasting data", world_rank);
+    int i;
+    for (i = 0; i < world_size; i++) {
+      if (i != world_rank)
+        MPI_Send(&buf, 2, MPI_INT, i, 0, MPI_COMM_WORLD);
+    }
+  }
+  else
+  {
+    MPI_Recv(&buf, 2, MPI_INT, MASTER, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  //Slaves save copy
-  MPI_Barrier(MPI_COMM_WORLD);
-	if(world_rank != MASTER){
     initValue = buf[0] + world_rank;
     finalValue = buf[1];
-	}
-
+    //printf("\n[%d] got message, starting with %d", world_rank,initValue);
+  }
 }
 
 /**
@@ -90,25 +92,27 @@ void init()
 **/
 void run()
 {
+  printf("\n[%d] is running", world_rank);
+
+  //printf("\n[%d] is in, starting with %d", world_rank,initValue);
+  bool isPair= ((initValue % 2) == 0);
   int sum1, sum2;
-	int isPair;
   int i;
 
-	if((initValue % 2) == 0)
-		isPair = 1;
-	else
-		isPair = -1;
-	for(i = initValue; i <= finalValue; i+= world_size){
-		//printf("\nnum %d from proc %d",i,world_rank);
-		if((sum1 = sumaDeFactores(i, isPair)) > i){
-			if(((sum1 % 2) == 0 && isPair == 1) || ((sum1 % 2) != 0 && isPair == -1) ){
+	for(i = initValue; i <= finalValue; i+= world_size)
+  {
+    //printf("\n[%d] working with %d", world_rank,i);
+		if((sum1 = sumaDeFactores(i, isPair)) > i)
+			if(((sum1 % 2) == 0 && isPair ) || ((sum1 % 2) != 0 && !isPair) )
+      {
 				sum2 = sumaDeFactores(sum1, isPair);
-				if(i == sum2) printf("\nLos numeros: %d  y %d son amigos",sum2, sum1);
+				if(i == sum2) printf("\n[%d] Los numeros: %d  y %d son amigos",world_rank,sum2, sum1);
 			}
-		}
 
-		isPair = isPair*-1;
+		isPair = !isPair;
 	}
+
+  printf("\n[%d] finished", world_rank);
 }
 
 /**
@@ -116,7 +120,7 @@ void run()
 * @isPairam num
 * @isPairam isPair
 **/
-int sumaDeFactores(int num, int isPair){
+int sumaDeFactores(int num, bool isPair){
 	if(num == 2) return 1;
 	if(num == 1) return 0;
 
@@ -124,7 +128,8 @@ int sumaDeFactores(int num, int isPair){
 	int end = num; //el final de la comisPairación no se vuelve a tomar en cuenta
 	int i;
 	int add;
-	if (isPair == 1){
+	if (isPair)
+  {
 		end = num/2;
 		add = 1;
 		if(end == 2) suma +=2;
