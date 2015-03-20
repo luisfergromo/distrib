@@ -101,8 +101,9 @@ void run()
   for(A = initValue; A <= finalValue; A+= world_size)
   {
     sumA= sumaDeFactores(A, isPair);
+    //printf("\n[%d] %d /%d ",world_rank,A,sumA);
     B= sumaDeFactores(sumA, isPair);
-    if(A==B)
+    if(A==B && A!=sumA)
       printf("\n[%d] Los numeros: %d  y %d son amigos",world_rank,A,sumA);
   }
   /*
@@ -134,8 +135,16 @@ void run()
 int sumaDeFactores(int num, bool isPair)
 {
 	if(num == 2) return 1;
-	if(num == 1) return 0;
+	if(num < 2) return 0;
 
+  int sum=1;
+  int factor=2;
+  for(;factor<num;factor++)
+    if(num%factor == 0)
+      sum+=factor;
+
+  return sum;
+/*
 	int suma = 1;
 	int end = num; //el final de la comisPairación no se vuelve a tomar en cuenta
 	int i;
@@ -148,12 +157,12 @@ int sumaDeFactores(int num, bool isPair)
 		else suma += (2 + end);
 	}else add = 2;
 
-	for(i = 3; i < end; i+= add){ // si el numero es non entonces no se verifica su divisón con isPaires
+	for(i = 3; i < end; i+= add){ // si el numero es non entonces no se verifica su divisón con pares
 		if(num % i == 0){
 			end = num/i;
 			if(end == i) suma += i;
 			else suma += (i + end);
 		}
 	}
-	return suma;
+	return suma;*/
 }
