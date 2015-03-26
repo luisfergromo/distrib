@@ -1,0 +1,19 @@
+En caso de probar en conexión local con cables ethernet:
+
+1-
+Cambiar la configuración de red de linux de máquinas a participar:
+Network(Conexión)>Wired>Options>IPv4 Settings
+
+Agregar (Add) una dirección IP fija a cada una
+Datos sugeridos:
+Dirección: 169.254.0.1 /2/3/...
+Mascara de Red: 255.255.255.0
+Gateway: dejar vacío o 0.0.0.0 (default)
+
+-Guardar-
+2- 
+Hacer pings entre máquinas con el servidor para probar las conexiones
+
+3- 
+Asignar IP del servidor al cliente en:
+address.sin_addr.s_addr = inet_addr("162.254.0.1");
