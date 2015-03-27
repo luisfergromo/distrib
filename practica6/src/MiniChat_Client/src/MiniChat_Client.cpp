@@ -65,10 +65,9 @@ void *inListener(void *arg)
 		{
 			text = (char*) malloc (length);
 			read(sockfd, text, length);
-			cout << text << endl;
+			cout << "> " << text << endl;
 
 			free(text);
-			cout << "> ";
 		}
 	}
 
@@ -83,7 +82,6 @@ void outListener()
 
 	while(1)
 	{
-		cout << "> ";
 		cin >> text;
 		length = strlen (text) + 1;
 
