@@ -24,6 +24,7 @@ int msgCount = 0;
 char src[4];
 
 void *inListener(void *arg);
+void print(char* xmlElement, char* msg);
 void outListener();
 void send(int id, int count, char *dest, char *msg);
 
@@ -67,17 +68,40 @@ void *inListener(void *arg)
 {
 	char bufIn[BUFLEN];
 
-	while(1)
-		{
-			result=recvfrom(sockfd, bufIn, BUFLEN, 0, (struct sockaddr*) &si_other,&slen);
-			if(result==-1)
-				diep("recvfrom()");
-				std::cout << "Se recibio algo" << endl;
-				std::cout << bufIn << endl;
-		}
+	while(true)
+	{
+		result=recvfrom(sockfd, bufIn, BUFLEN, 0, (struct sockaddr*) &si_other,&slen);
+		if(result==-1)
+			diep("recvfrom()");
+
+		print("src",bufIn);
+		std::cout << ": ";
+		print("text",bufIn);
+		std::cout << endl;
+	}
 
 		close(sockfd);
 		exit(0);
+}
+
+void print(char* xmlElement, char* msg)
+{
+	int size= strlen(xmlElement);
+	char openS[size+2];
+	char closeS[size+3];
+
+	sprintf(openS,"<%s>",xmlElement);
+	sprintf(closeS,"</%s>",xmlElement);
+
+	char *init=	strstr(msg, openS)+strlen(openS);
+	char *end=	strstr(init, closeS);
+
+	//std::cout << init;
+	while(init != end)
+	{
+		std::cout << init[0];
+		init++;
+	}
 }
 
 void outListener()
@@ -88,15 +112,22 @@ void outListener()
 	{
 		std::cin >> msg;
 
-		char *dest = strchr(msg, ':');
-		if(dest)
+		char *split = strchr(msg, ':');
+		if(split)//specific destinatary
 		{
+			int n= split - msg;
+			char dest[n];
+			for(int i=0;i<n;i++)
+				dest[i]= msg[i];
 
+			std::cout << "N: " << n << endl;
+			std::cout << "dest: " << dest << endl;
+			split++;
+			send(msgCount, 0, dest, split);
 		}
-		else
-			dest="0";
+		else//broadcast
+			send(msgCount, 0, "0", msg);
 
-		send(msgCount, 0, dest, msg);
 		msgCount++;
 	}
 
