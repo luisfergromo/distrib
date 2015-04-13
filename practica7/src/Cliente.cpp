@@ -23,6 +23,7 @@ struct sockaddr_in si_other;
 int msgCount = 0;
 char src[4];
 
+void initSession();
 void *inListener(void *arg);
 void print(char* xmlElement, char* msg);
 void outListener();
@@ -36,9 +37,6 @@ void diep(char *s)
 
 int main(void)
 {
-	std::cout << "Welcome, enter your nickname: " ;
-	std::cin >> src;
-
 	slen= sizeof(si_other);
 	// Crear el socket
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -54,6 +52,7 @@ int main(void)
 		diep("inet_aton() failed\n");
 
 	std::cout << "Client up in port " << PORT << endl;
+	initSession();
 	pthread_t tid;
 	pthread_create(&tid,NULL,inListener,NULL);
 	outListener();
@@ -63,6 +62,12 @@ int main(void)
 	return 0;
 }
 
+void initSession()
+{
+		std::cout << "Welcome, enter your nickname: " ;
+		std::cin >> src;
+		send(-1, 0, "0", "LOGIN_REQUEST");
+}
 
 void *inListener(void *arg)
 {
@@ -119,9 +124,7 @@ void outListener()
 			char dest[n];
 			for(int i=0;i<n;i++)
 				dest[i]= msg[i];
-
-			std::cout << "N: " << n << endl;
-			std::cout << "dest: " << dest << endl;
+			
 			split++;
 			send(msgCount, 0, dest, split);
 		}

@@ -2,6 +2,8 @@
 import java.io.StringReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,7 +16,7 @@ public class Servidor
 {
 	byte[] buf;
 	DatagramSocket socket;
-	DatagramPacket packet;
+	ArrayList<Session> sessions;
 
 	public static void main(String [] args)
 	{
@@ -34,7 +36,7 @@ public class Servidor
 	{
 		buf = new byte[buffLen];
 		socket = new DatagramSocket(port);
-		packet = new DatagramPacket(buf, buf.length);
+		sessions= new ArrayList<Session>();
 
 		System.out.println("Server Up");
 		System.out.println("Listening to port "+port);
@@ -48,6 +50,7 @@ public class Servidor
 		{
 			System.out.println("listening... ");
 			String msg		= "";
+			DatagramPacket packet= new DatagramPacket(buf, buf.length);
 			socket.receive(packet);
 
 			//Se adapta el mensaje leido para entenderlo
@@ -71,21 +74,50 @@ public class Servidor
 				Element element = (Element) doc.getElementsByTagName("socket").item(0);
 
 				//LOGIN
-				if(Integer.parseInt(element.getElementsByTagName("id").item(0).getTextContent()) == -1)
+				if(element.getElementsByTagName("id").item(0).getTextContent().contentEquals("-1"))
 				{
 					if(element.getElementsByTagName("text").item(0).getTextContent().contentEquals("LOGIN_REQUEST"))
-					{
-
-					}
+						sessions.add(new Session(packet, element));
 				}
-				//MSG
+				//MSG BROADCAST
+				else if(element.getElementsByTagName("dest").item(0).getTextContent().contentEquals("0"))
+				{
+					String src= element.getElementsByTagName("src").item(0).getTextContent();
+					for(Session session: sessions)
+						if(!src.contentEquals(session.nickname))
+						{
+							DatagramPacket reply= new DatagramPacket(packet.getData().clone(), packet.getLength(), session.address, session.port);
+							socket.send(reply);
+						}
+				}
+				//PRIVATE MSG
 				else
 				{
-					socket.send(packet);
+					String dest= element.getElementsByTagName("dest").item(0).getTextContent();
+					for(Session session: sessions)
+						if(dest.contentEquals(session.nickname))
+						{
+							DatagramPacket reply= new DatagramPacket(packet.getData().clone(), packet.getLength(), session.address, session.port);
+							socket.send(reply);
+						}
 				}
 			}
 			catch(Exception ex)	{}
 
+			}
+		}
+
+		class Session
+		{
+			public String nickname;
+			public InetAddress address;
+			public int port;
+
+			public Session(DatagramPacket data, Element xmlMsg)
+			{
+				this.nickname= xmlMsg.getElementsByTagName("src").item(0).getTextContent();
+				this.address= data.getAddress();
+				this.port= data.getPort();
 			}
 		}
 
