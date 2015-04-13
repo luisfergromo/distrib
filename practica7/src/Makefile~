@@ -1,0 +1,5 @@
+all:
+	javac Servidor.java
+	echo OK
+	g++ -pthread -o cliente Cliente.cpp
+	echo OK

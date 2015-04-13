@@ -1,0 +1,8 @@
+﻿<socket>
+<id>0</id> <!-- El ID único del mensaje completo -->
+<count>0</count> <!-- La cuenta del paquete enviado. Sirve para ordenar paquetes -->
+<size>10</size> <!-- Tamaño total del mensaje; cantidad de paquetes enviados -->
+<src>romina</src>
+<dest>omar</dest> <!-- BCAST: 0,Usuario en específico: Nombre  -->
+<text>Hola</text> <!-- Contenido del mensaje -->
+</socket>
